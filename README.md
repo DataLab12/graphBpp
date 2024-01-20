@@ -26,7 +26,7 @@ Please cite the following publication: Shebaro, M., & Tesic, J. (2023). Scaling 
 * Simply download one of the .cpp files (each source file has a different tree-sampling technique) and compile the source file like the following:
 
 ```
-user:~$ g++ -fopenmp graphBplus_BFS.cpp
+user:~$ g++ -fopenmp graphBplusplus_BFS.cpp
 ```
 The signed graph must be in the following format to be compatible with graphC (src,dst,sign).
 Preprocessing of the signed graph is embedded.
