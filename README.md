@@ -23,7 +23,7 @@ Please cite the following publication: Shebaro, M., & Tesic, J. (2023). Scaling 
 
 ## How to Run the Code 
 
-* Simply download one of the .cpp files and compile the source file like the following:
+* Simply download one of the .cpp files (each source file has a different tree-sampling technique) and compile the source file like the following:
 
 ```
 user:~$ g++ -fopenmp graphBplus_BFS.cpp
@@ -31,13 +31,12 @@ user:~$ g++ -fopenmp graphBplus_BFS.cpp
 The signed graph must be in the following format to be compatible with graphC (src,dst,sign).
 Preprocessing of the signed graph is embedded.
 
-* To execute the compiled file, ABCD utilizes 2 parameters in this order (iteration_count K):
+* To execute the compiled file, GraphB++ utilizes 1 parameter (iteration_count):
 ```
-user:~$ ./a.out input.txt 1000 500
+user:~$ ./a.out input.txt 1000
 ```
-where K < iteration_count.
  
-* **Output:** ABCD prints the vertex cardinality of the largest balanced subgraph found.
+* **Output:** graphBpp is going to execute and eventually create two files *_balancedStates.csv and *_frustrationindex where they will encompass each balanced state with its associated frequency and frustration index respectively.
 
 **Note:** if you run into errors related to the stack memory please run this command before executing the code:
 ```
