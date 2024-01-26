@@ -662,6 +662,7 @@ std::map<int,std::vector<float>> extract_features(const char* name, int i)
   std::map<std::string,double> agreement;
   std::map<std::string,int> resolution;
     std::map<std::string,bool> copy;
+      std::map<std::string,double> authority;
     int* const degree = new int [g.nodes];
     for (int v = 0; v < g.nodes; v++) {
     degree[v] = 0;
@@ -738,10 +739,15 @@ for (int v = 0; v < g.nodes; v++) {
       total_string.append(std::to_string(src));
             total_string.append(",");
             total_string.append(std::to_string(dst));
-      influence[src]= 1.0*influence[src]+ (1.0*agreement[total_string]/iterations);
-      strength[src]=1.0*strength[src]+ (1.0*resolution[total_string]/iterations);
-      influence[dst]= 1.0*influence[dst]+ (1.0*agreement[total_string]/iterations);
-      strength[dst]=1.0*strength[dst]+ (1.0*resolution[total_string]/iterations);
+      
+      authority[total_string]=(((1.0* inCC[src])/iterations)+ ((1.0*inCC[dst])/iterations))/2;
+      agreement[total_string]=1.0*agreement[total_string]/iterations;
+      resolution[total_string]=1.0*resolution[total_string]/iterations;
+
+      influence[src]= 1.0*influence[src]+ (1.0*agreement[total_string]);
+      strength[src]=1.0*strength[src]+ (1.0*resolution[total_string]);
+      influence[dst]= 1.0*influence[dst]+ (1.0*agreement[total_string]);
+      strength[dst]=1.0*strength[dst]+ (1.0*resolution[total_string]);
       }
     index=index+1;
     }
@@ -761,7 +767,7 @@ std::map<int,std::vector<float>> node_features;
   }
 
 
-
+//THIS CODE IMPLEMENTS ALL CONSENSUS FEATURES BUT THIS FUNCTION RETURNS ONLY THE NODE FEATURES, TO GET THE EDGE FEATURES YOU HAVE TO MAP THE INDICES IN AUTHORITY,AGREEMENT,RESOLUTION (INTHE FORM OF STRINGS OF A STD::MAP) TO THEIR ORIGINAL NODE IDS BEFORE OUTPUTTING.
 
   // finalize
   freeGraph(g);
