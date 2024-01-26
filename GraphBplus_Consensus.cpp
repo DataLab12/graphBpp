@@ -636,11 +636,15 @@ bool src_flag,dst_flag;
 
 
 
-std::map<int,std::vector<float>> extract_features(const char* name, int i)
+int main()
 {
-
-  Graph g = readGraph(name);
-  const int iterations = i;
+    if (argc != 3) { printf("USAGE: %s input_file_name iteration_count\n", argv[0]); exit(-1); }
+    CPUTimer timer;
+    timer.start();
+    printf("verification: %s\n", verify ? "on" : "off");
+    printf("input: %s\n", argv[1]);
+  Graph g = readGraph(argv[1]);
+  const int iterations = atoi(argv[2]);;
   std::vector<int> edges_balanced_src;
   std::vector<int> edges_balanced_dst;
   std::vector<bool> weight_balanced;
@@ -725,7 +729,9 @@ for (int v = 0; v < g.nodes; v++) {
 
     }
 
-
+  std::map<std::string, double> agreement_orig;
+  std::map<std::string, int> resolution_orig;
+  std::map<std::string, double> authority_orig;
 
 for (int v = 0; v < g.nodes; v++) {
     int index=g.nindex[v];
@@ -739,36 +745,74 @@ for (int v = 0; v < g.nodes; v++) {
       total_string.append(std::to_string(src));
             total_string.append(",");
             total_string.append(std::to_string(dst));
-      
-      authority[total_string]=(((1.0* inCC[src])/iterations)+ ((1.0*inCC[dst])/iterations))/2;
-      agreement[total_string]=1.0*agreement[total_string]/iterations;
-      resolution[total_string]=1.0*resolution[total_string]/iterations;
 
-      influence[src]= 1.0*influence[src]+ (1.0*agreement[total_string]);
-      strength[src]=1.0*strength[src]+ (1.0*resolution[total_string]);
-      influence[dst]= 1.0*influence[dst]+ (1.0*agreement[total_string]);
-      strength[dst]=1.0*strength[dst]+ (1.0*resolution[total_string]);
+            std::string total_string_o = "";
+            total_string_o.append(std::to_string(g.origID[src]));
+            total_string_o.append(",");
+            total_string_o.append(std::to_string(g.origID[dst]));
+      
+      authority_orig[total_string_o]=(((1.0* inCC[src])/iterations)+ ((1.0*inCC[dst])/iterations))/2;
+      agreement_orig[total_string_o]=1.0*agreement[total_string]/iterations;
+      resolution_orig[total_string_o]=1.0*resolution[total_string]/iterations;
+
+      influence[src]= 1.0*influence[src]+ (1.0*agreement_orig[total_string_o]);
+      strength[src]=1.0*strength[src]+ (1.0*resolution_orig[total_string_o]);
+      influence[dst]= 1.0*influence[dst]+ (1.0*agreement_orig[total_string_o]);
+      strength[dst]=1.0*strength[dst]+ (1.0*resolution_orig[total_string_o]);
       }
     index=index+1;
     }
   }
 
-std::map<int,std::vector<float>> node_features;
-  
-  for (int i = 0; i < g.nodes; i++) {
-        influence[i]= (1.0*influence[i])/(1.0*degree[i]);
-        strength[i]=(1.0*strength[i])/(1.0*degree[i]);
-        float value=1.0* inCC[i] / iterations;
-        node_features[g.origID[i]].push_back(value);
-        float value1=1.0* influence[i];
-        node_features[g.origID[i]].push_back(value1);
-        float value2=1.0*strength[i];
-        node_features[g.origID[i]].push_back(value2);
-  }
+agreement.clear();
+authority.clear();
+resolution.clear();
 
+std::map<int, std::vector<float>> node_features;
 
-//THIS CODE IMPLEMENTS ALL CONSENSUS FEATURES BUT THIS FUNCTION RETURNS ONLY THE NODE FEATURES, TO GET THE EDGE FEATURES YOU HAVE TO MAP THE INDICES IN AUTHORITY,AGREEMENT,RESOLUTION (INTHE FORM OF STRINGS OF A STD::MAP) TO THEIR ORIGINAL NODE IDS BEFORE OUTPUTTING.
+for (int i = 0; i < g.nodes; i++) {
+    influence[i] = (1.0 * influence[i]) / (1.0 * degree[i]);
+    strength[i] = (1.0 * strength[i]) / (1.0 * degree[i]);
+    float value = 1.0 * inCC[i] / iterations;
+    node_features[g.origID[i]].push_back(value);
+    float value1 = 1.0 * influence[i];
+    node_features[g.origID[i]].push_back(value1);
+    float value2 = 1.0 * strength[i];
+    node_features[g.origID[i]].push_back(value2);
+}
 
+std::map<std::string, std::vector<float>> edge_features;
+
+for (int v = 0; v < g.nodes; v++) {
+    int index = g.nindex[v];
+    int index_max = g.nindex[v + 1];
+    while (index < index_max) {
+        const int nli = g.nlist[index] >> 1;
+        if (v < nli) {
+            int src = g.origID[v];
+            int dst = g.origID[nli];
+            std::string total_string = "";
+            total_string.append(std::to_string(src));
+            total_string.append(",");
+            total_string.append(std::to_string(dst));
+            float value = 1.0 * agreement_orig[total_string];
+            edge_features[total_string].push_back(value);
+            float value1 = 1.0 * authority_orig[total_string];
+            edge_features[total_string].push_back(value1);
+            float value2 = 1.0 * resolution_orig[total_string];
+            edge_features[total_string].push_back(value2);
+
+        }
+    }
+}
+//
+// 
+//The features are in node_features (in the order of status,influence,strength) and edge_features (in the order of agreement,authority, resolution)
+// 
+// 
+// 
+// 
+// 
   // finalize
   freeGraph(g);
   delete [] minus;
@@ -786,5 +830,4 @@ std::map<int,std::vector<float>> node_features;
   delete [] degree;
 
 
-  return node_features;
 }
