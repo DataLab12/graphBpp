@@ -634,9 +634,16 @@ bool src_flag,dst_flag;
 
 }
 
+struct CPUTimer
+{
+  timeval beg, end;
+  CPUTimer() {}
+  ~CPUTimer() {}
+  void start() {gettimeofday(&beg, NULL);}
+  double elapsed() {gettimeofday(&end, NULL); return end.tv_sec - beg.tv_sec + (end.tv_usec - beg.tv_usec) / 1000000.0;}
+};
 
-
-int main()
+int main(int argc, char* argv[])
 {
     if (argc != 3) { printf("USAGE: %s input_file_name iteration_count\n", argv[0]); exit(-1); }
     CPUTimer timer;
@@ -726,11 +733,11 @@ for (int v = 0; v < g.nodes; v++) {
 
     determineCCs(g, label, minus, queue, inCC, negCnt,&edges_balanced_src,&edges_balanced_dst,&weight_balanced,&agreement,&resolution,copy);
    
-
+    std::cout<<"Iteration "<<iter<<" Completed!"<<std::endl;
     }
 
   std::map<std::string, double> agreement_orig;
-  std::map<std::string, int> resolution_orig;
+  std::map<std::string, double> resolution_orig;
   std::map<std::string, double> authority_orig;
 
 for (int v = 0; v < g.nodes; v++) {
@@ -803,7 +810,25 @@ for (int v = 0; v < g.nodes; v++) {
             edge_features[total_string].push_back(value2);
 
         }
+        index++;
     }
+}
+
+for (auto const& x : edge_features)
+{
+    std::cout << x.first<<":";
+    for(int i=0;i<x.second.size();i++){
+      std::cout<<x.second[i]<<",";
+    }
+    std::cout<<std::endl;
+}
+for (auto const& x : node_features)
+{
+    std::cout << x.first<<":";
+    for(int i=0;i<x.second.size();i++){
+      std::cout<<x.second[i]<<",";
+    }
+    std::cout<<std::endl;
 }
 //
 // 
